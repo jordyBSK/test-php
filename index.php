@@ -7,7 +7,7 @@ if (file_exists('todos.json')) {
 
 if (isset($_POST["submitBtn"])) {
 
-    $newTodo = [htmlspecialchars($_POST["todoName"]), $_POST["todoDate"]];
+    $newTodo = [$_POST["todoName"], $_POST["todoDate"]];
 
     $todos[] = $newTodo;
 
@@ -15,6 +15,17 @@ if (isset($_POST["submitBtn"])) {
 
     header("location:index.php");
 }
+if (isset($_POST["delete"])) {
+
+    array_splice($todos, $_POST["delete"],1);
+
+    file_put_contents('todos.json', json_encode($todos));
+
+    header("location:index.php");
+}
+
+
+
 
 
 ?>
@@ -27,14 +38,8 @@ if (isset($_POST["submitBtn"])) {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-<?php
-foreach($todos as $todo){
-    echo  $todo[0];
-    echo  $todo[1];
 
-}
 
-?>
 
 
 <form class="max-w-md mx-auto mt-12" method="post">
@@ -61,6 +66,34 @@ foreach($todos as $todo){
         Submit
     </button>
 </form>
+
+<div class="max-w-md mx-auto mt-12">
+    <ul>
+        <?php foreach ($todos as  $key => $value): ?>
+            <li class="p-2 rounded-lg">
+                <div class="flex align-middle flex-row justify-between">
+                    <div class="p-2">
+                        <p> <?php echo htmlspecialchars($value[0]); ?></p>
+                    </div>
+                    <div class="p-2">
+                        <p> <?php echo $value[1]; ?></p>
+                    </div>
+                    <form action="index.php" method="post">
+                        <button name="delete" type="submit" class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg" value="<?= $key?>" >
+                            <svg class="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="15" y1="9" x2="9" y2="15" />
+                                <line x1="9" y1="9" x2="15" y2="15" />
+                            </svg>
+                            <span>Remove</span>
+                        </button>
+                    </form>
+                </div>
+                <hr class="mt-2"/>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>
 
 
 </body>
