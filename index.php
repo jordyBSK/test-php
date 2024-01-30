@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-
- $_SESSION['userName'] = "dylan";
+$_SESSION['userName'] = "dylan";
+$_SESSION['allTask'] = [];
 
 $errorMessage1 = '';
 
@@ -14,15 +14,14 @@ if (file_exists('todos.json')) {
 
 if (isset($_POST["submitBtn"])) {
     $newTodo = [$_POST["todoName"], $_POST["todoDate"]];
-    if (strlen($_POST["todoName"]) > 10){
+    if (strlen($_POST["todoName"]) > 2) {
         $todos[] = $newTodo;
         file_put_contents('todos.json', json_encode($todos));
         header("location:index.php");
         exit;
-    }else{
-        $errorMessage2 = 'minimum 10 lettre dans la todo';
+    } else {
+        $errorMessage2 = 'minimum 2 lettres dans la todo';
     }
-
 }
 
 if (isset($_POST["delete"])) {
@@ -49,7 +48,6 @@ function sortName($a, $b): int
     return strcmp($a[0], $b[0]);
 }
 
-
 function sortDate($a, $b): int
 {
     return strtotime($a[1]) - strtotime($b[1]);
@@ -71,6 +69,30 @@ if (isset($_GET['sortBtn'])) {
                 $todos = array_reverse($todos);
                 break;
         }
+    }
+}
+
+if (isset($_POST["upBtn"])) {
+    $indexActuel = $_POST["upBtn"];
+    if ($indexActuel > 0) {
+        $temp = $todos[$indexActuel];
+        $todos[$indexActuel] = $todos[$indexActuel - 1];
+        $todos[$indexActuel - 1] = $temp;
+        file_put_contents('todos.json', json_encode($todos));
+        header("location:index.php");
+        exit;
+    }
+}
+
+if (isset($_POST["downBtn"])) {
+    $indexActuel = $_POST["downBtn"];
+    if ($indexActuel < count($todos) - 1) {
+        $temp = $todos[$indexActuel];
+        $todos[$indexActuel] = $todos[$indexActuel + 1];
+        $todos[$indexActuel + 1] = $temp;
+        file_put_contents('todos.json', json_encode($todos));
+        header("location:index.php");
+        exit;
     }
 }
 ?>
@@ -113,7 +135,7 @@ if (isset($_GET['sortBtn'])) {
     <select name="sort" id="sort"
             class="max-w-md mx-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         <option selected>trier les todos</option>
-        <option value="date">Date</option>y
+        <option value="date">Date</option>
         <option value="A-Z">A-Z</option>
         <option value="Z-A">Z-A</option>
     </select>
@@ -131,20 +153,21 @@ if (isset($_GET['sortBtn'])) {
 <?php endif; ?>
 
 
-<div class="max-w-lg mx-auto mt-12">
+<div class="max-w-xl mx-auto mt-12">
     <ul>
         <?php foreach ($todos as $key => $value): ?>
-            <li class="p-2 rounded-lg">
+
+            <li class="mb-12 rounded-lg">
                 <div class="flex align-middle flex-row justify-between">
                     <form method="post" class="flex">
-                        <div class="p-2">
+                        <div class="">
                             <input name="inputChange" value="<?= htmlspecialchars($value[0]); ?>"></input>
                         </div>
-                        <div class="p-2">
+                        <div class=" w-24 ml-12">
                             <p><?= $value[1]; ?></p>
                         </div>
                         <button name="edit" type="submit"
-                                class="flex text-green-500 border-2 border-green-500 p-2 rounded-lg"
+                                class="flex text-green-500 border-2 border-green-500 ml-12 p-2 rounded-lg"
                                 value="<?= $key ?>">
                             <svg class="h-6 w-6 text-green-500" viewBox="0 0 24 24" fill="none"
                                  stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -155,12 +178,9 @@ if (isset($_GET['sortBtn'])) {
                             </svg>
                             <span>edit</span>
                         </button>
-                    </form>
 
-
-                    <form action="index.php" method="post" >
                         <button name="delete" type="submit"
-                                class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg"
+                                class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg ml-12"
                                 value="<?= $key ?>">
                             <svg class="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -170,6 +190,9 @@ if (isset($_GET['sortBtn'])) {
                             </svg>
                             <span>Remove</span>
                         </button>
+
+                        <button type="submit" class=" ml-12 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" name="downBtn" value="<?= $key ?>">Down</button>
+                        <button type="submit" class=" ml-12 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" name="upBtn" value="<?= $key ?>">Up</button>
                     </form>
                 </div>
                 <hr class="mt-2"/>
