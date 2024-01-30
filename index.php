@@ -13,14 +13,14 @@ $options = [
 $pdo = new PDO($dsn, null, null, $options);
 
 
-
-$_SESSION['userName'] = "dylan";
-
 $errorMessage1 = '';
 
 
+$query = $pdo->prepare("SELECT * FROM todo");
+$query->execute();
+$row = $query->fetchAll(PDO::FETCH_ASSOC);
 
-
+$allTodo = $row['allTodo'];
 
 if (isset($_POST["submitBtn"])) {
     if (strlen($_POST["todoName"]) > 2) {
@@ -34,10 +34,12 @@ if (isset($_POST["submitBtn"])) {
     }
 }
 
-if (isset($_POST["delete"])) {
+if (isset($_POST['delete'])) {
     array_splice($todos, $_POST["delete"], 1);
-    file_put_contents('todos.json', json_encode($todos));
-    header("location:index.php");
+    $deleteData = $pdo->prepare('DELETE FROM todo WHERE id = :key ');
+    $deleteData->execute(['key' => $_POST['delete']]);
+
+    header('Location: index.php');
     exit;
 }
 
@@ -141,7 +143,49 @@ if (isset($_POST["upBtn"]) || isset($_POST["downBtn"])) {
 
 <div class="max-w-xl mx-auto mt-12">
     <ul>
+        <?php foreach ($row as $tache): ?>
 
+            <li class="mb-12 rounded-lg">
+                <div class="flex align-middle flex-row justify-between">
+                    <form method="post" class="flex">
+                        <div class="">
+                            <input name="inputChange" value="<?= htmlspecialchars($tache['name']); ?>"></input>
+                        </div>
+                        <div class=" w-24 ml-12">
+                            <p><?= $tache[1]; ?></p>
+                        </div>
+                        <button name="edit" type="submit"
+                                class="flex text-green-500 border-2 border-green-500 ml-12 p-2 rounded-lg"
+
+                            <svg class="h-6 w-6 text-green-500" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            <span>edit</span>
+                        </button>
+
+                        <button name="delete" type="submit"
+                                class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg ml-12"
+
+                            <svg class="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            <span>Remove</span>
+                        </button>
+
+                        <button type="submit" class=" ml-12 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" name="downBtn" value="<?= $key ?>">Down</button>
+                        <button type="submit" class=" ml-12 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" name="upBtn" value="<?= $key ?>">Up</button>
+                    </form>
+                </div>
+                <hr class="mt-2"/>
+            </li>
+        <?php endforeach; ?>
     </ul>
 </div>
 
