@@ -24,6 +24,31 @@ if (isset($_POST["delete"])) {
     header("location:index.php");
 }
 
+if (isset($_POST["edit"]) && isset($_POST["inputChange"])) {
+    $editIndex = $_POST["edit"];
+    $inputValue = $_POST["inputChange"];
+
+
+    if (array_key_exists($editIndex, $todos)) {
+
+        $todos[$editIndex][0] = $inputValue;
+        file_put_contents('todos.json', json_encode($todos));
+
+        header("location:index.php");
+        exit;
+    }
+}
+
+
+
+if (isset($_POST['filter'])){
+
+}
+
+if (isset($_POST['sort'])){
+
+}
+
 
 
 
@@ -67,7 +92,7 @@ if (isset($_POST["delete"])) {
     </button>
 </form>
 
-<div class="max-w-md mx-auto mt-12">
+<div class="max-w-lg mx-auto mt-12">
     <ul>
         <?php foreach ($todos as  $key => $value): ?>
             <li class="p-2 rounded-lg">
@@ -78,7 +103,7 @@ if (isset($_POST["delete"])) {
                     <div class="p-2">
                         <p> <?php echo $value[1]; ?></p>
                     </div>
-                    <form action="index.php" method="post">
+                    <form action="index.php" method="post" class="flex">
                         <button name="delete" type="submit" class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg" value="<?= $key?>" >
                             <svg class="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="10" />
@@ -87,6 +112,19 @@ if (isset($_POST["delete"])) {
                             </svg>
                             <span>Remove</span>
                         </button>
+                    </form>
+                    <form method="post" class="flex">
+                        <button name="edit" type="submit" class="flex text-green-500 border-2 border-green-500 p-2 rounded-lg" value="<?= $key?>" >
+                            <svg class="h-6 w-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="15" y1="9" x2="9" y2="15" />
+                                <line x1="9" y1="9" x2="15" y2="15" />
+                            </svg>
+                            <span>edit</span>
+                        </button>
+                        <input type="text" name="inputChange"
+                               class="block py-2.5 px-0 w-16 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-black dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                               placeholder=" " required/>
                     </form>
                 </div>
                 <hr class="mt-2"/>
