@@ -12,7 +12,6 @@ $options = [
 ];
 $pdo = new PDO($dsn, null, null, $options);
 
-
 $errorMessage1 = '';
 
 
@@ -20,11 +19,6 @@ $query = $pdo->prepare("SELECT * FROM todo");
 $query->execute();
 $row = $query->fetchAll(PDO::FETCH_ASSOC);
 
-
-print_r($row);
-foreach ($row as $tache){
-   echo $tache['id'];
-}
 
 if (isset($_POST["submitBtn"])) {
     if (strlen($_POST["todoName"]) > 2) {
@@ -34,7 +28,7 @@ if (isset($_POST["submitBtn"])) {
         header("Location: index.php");
         exit;
     } else {
-        $errorMessage2 = 'Minimum 2 lettres dans la todo';
+        $errorMessage2 = 'Minimum 1 lettres dans la todo';
     }
 }
 
@@ -46,15 +40,24 @@ if (isset($_POST['delete'])) {
     exit;
 }
 
-if (isset($_POST['edit'])) {
-    $updateData = $pdo->prepare('UPDATE todo SET name = :newName WHERE id = :key ');
 
-    $updateData->execute(['key' => $_POST['edit'] , 'newName' => $_POST['inputChange']]);
+function sort_my_things(): void {
+    if ($_GET['selectOrder'] == 'trier les todos') return;
 
-    header('Location: index.php');
-    exit;
+    global $pdo, $row;
+
+    $sql = "";
+
+    if ($_GET['selectOrder'] == 'A-Z') $sql = "SELECT * FROM todo order by name asc ";
+    elseif ($_GET['selectOrder'] == 'Z-A') $sql = "SELECT * FROM todo order by name desc ";
+    elseif ($_GET['selectOrder'] == 'date') $sql = "SELECT * FROM todo order by expiration";
+
+    $selectData = $pdo->query($sql);
+    $row = $selectData->fetchAll();
 }
-
+if (isset($_GET['sortBtn'])) {
+    sort_my_things();
+}
 
 
 
@@ -68,14 +71,6 @@ function sortName($a, $b): int
 function sortDate($a, $b): int
 {
     return strtotime($a[1]) - strtotime($b[1]);
-}
-
-if (isset($_GET['sortBtn'])) {
-    if (isset($_GET['sort'])) {
-        $sortType = $_GET['sort'];
-
-
-    }
 }
 
 if (isset($_POST["upBtn"]) || isset($_POST["downBtn"])) {
@@ -133,7 +128,7 @@ if (isset($_POST["upBtn"]) || isset($_POST["downBtn"])) {
 
 
 <form method="get" class="flex">
-    <select name="sort" id="sort"
+    <select name="selectOrder" id="order"
             class="max-w-md mx-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         <option selected>trier les todos</option>
         <option value="date">Date</option>
