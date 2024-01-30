@@ -1,28 +1,36 @@
 <?php
 session_start();
 
-$_SESSION['userName'] = "dylan";
 
+
+$dsn = "sqlite: data.db";
+
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+];
+$pdo = new PDO($dsn, null, null, $options);
+
+
+
+$_SESSION['userName'] = "dylan";
 
 $errorMessage1 = '';
 
-$todos = [];
 
-$_SESSION['allTask'] = [$todos];
 
-if (file_exists('todos.json')) {
-    $todos = json_decode(file_get_contents('todos.json'), true);
-}
+
 
 if (isset($_POST["submitBtn"])) {
-    $newTodo = [$_POST["todoName"], $_POST["todoDate"]];
     if (strlen($_POST["todoName"]) > 2) {
-        $todos[] = $newTodo;
-        file_put_contents('todos.json', json_encode($todos));
-        header("location:index.php");
+        $insertData = $pdo->prepare('INSERT INTO todo(name, expiration) VALUES (:nom, :date)');
+        $insertData->execute(['nom' => $_POST["todoName"], 'date' => $_POST["todoDate"]]);
+
+        header("Location: index.php");
         exit;
     } else {
-        $errorMessage2 = 'minimum 2 lettres dans la todo';
+        $errorMessage2 = 'Minimum 2 lettres dans la todo';
     }
 }
 
@@ -33,17 +41,9 @@ if (isset($_POST["delete"])) {
     exit;
 }
 
-if (isset($_POST["edit"]) && isset($_POST["inputChange"])) {
-    $editIndex = $_POST["edit"];
-    $inputValue = $_POST["inputChange"];
 
-    if (array_key_exists($editIndex, $todos)) {
-        $todos[$editIndex][0] = $inputValue;
-        file_put_contents('todos.json', json_encode($todos));
-        header("location:index.php");
-        exit;
-    }
-}
+
+
 
 function sortName($a, $b): int
 {
@@ -59,18 +59,7 @@ if (isset($_GET['sortBtn'])) {
     if (isset($_GET['sort'])) {
         $sortType = $_GET['sort'];
 
-        switch ($sortType) {
-            case 'date':
-                usort($todos, 'sortDate');
-                break;
-            case 'A-Z':
-                usort($todos, 'sortName');
-                break;
-            case 'Z-A':
-                usort($todos, 'sortName');
-                $todos = array_reverse($todos);
-                break;
-        }
+
     }
 }
 
@@ -84,21 +73,13 @@ if (isset($_POST["upBtn"]) || isset($_POST["downBtn"])) {
         $direction = 1;
     }
 
-    if ($todoSelect >= 0 && $todoSelect < count($todos)) {
-        $newIndex = $todoSelect + $direction;
-
-        if ($newIndex >= 0 && $newIndex < count($todos)) {
-            $temp = $todos[$todoSelect];
-            $todos[$todoSelect] = $todos[$newIndex];
-            $todos[$newIndex] = $temp;
-
-            file_put_contents('todos.json', json_encode($todos));
-        }
-    }
 
     header("location:index.php");
     exit;
 }
+
+
+
 
 ?>
 
@@ -160,49 +141,7 @@ if (isset($_POST["upBtn"]) || isset($_POST["downBtn"])) {
 
 <div class="max-w-xl mx-auto mt-12">
     <ul>
-        <?php foreach ($todos as $key => $value): ?>
 
-            <li class="mb-12 rounded-lg">
-                <div class="flex align-middle flex-row justify-between">
-                    <form method="post" class="flex">
-                        <div class="">
-                            <input name="inputChange" value="<?= htmlspecialchars($value[0]); ?>"></input>
-                        </div>
-                        <div class=" w-24 ml-12">
-                            <p><?= $value[1]; ?></p>
-                        </div>
-                        <button name="edit" type="submit"
-                                class="flex text-green-500 border-2 border-green-500 ml-12 p-2 rounded-lg"
-                                value="<?= $key ?>">
-                            <svg class="h-6 w-6 text-green-500" viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                 stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                            <span>edit</span>
-                        </button>
-
-                        <button name="delete" type="submit"
-                                class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg ml-12"
-                                value="<?= $key ?>">
-                            <svg class="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                            <span>Remove</span>
-                        </button>
-
-                        <button type="submit" class=" ml-12 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" name="downBtn" value="<?= $key ?>">Down</button>
-                        <button type="submit" class=" ml-12 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" name="upBtn" value="<?= $key ?>">Up</button>
-                    </form>
-                </div>
-                <hr class="mt-2"/>
-            </li>
-        <?php endforeach; ?>
     </ul>
 </div>
 
