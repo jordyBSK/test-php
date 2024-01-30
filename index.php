@@ -2,11 +2,13 @@
 session_start();
 
 $_SESSION['userName'] = "dylan";
-$_SESSION['allTask'] = [];
+
 
 $errorMessage1 = '';
 
 $todos = [];
+
+$_SESSION['allTask'] = [$todos];
 
 if (file_exists('todos.json')) {
     $todos = json_decode(file_get_contents('todos.json'), true);
@@ -72,29 +74,32 @@ if (isset($_GET['sortBtn'])) {
     }
 }
 
-if (isset($_POST["upBtn"])) {
-    $indexActuel = $_POST["upBtn"];
-    if ($indexActuel > 0) {
-        $temp = $todos[$indexActuel];
-        $todos[$indexActuel] = $todos[$indexActuel - 1];
-        $todos[$indexActuel - 1] = $temp;
-        file_put_contents('todos.json', json_encode($todos));
-        header("location:index.php");
-        exit;
+if (isset($_POST["upBtn"]) || isset($_POST["downBtn"])) {
+
+    if (isset($_POST["upBtn"])) {
+        $todoSelect = $_POST["upBtn"];
+        $direction = -1;
+    } elseif (isset($_POST["downBtn"])) {
+        $todoSelect = $_POST["downBtn"];
+        $direction = 1;
     }
+
+    if ($todoSelect >= 0 && $todoSelect < count($todos)) {
+        $newIndex = $todoSelect + $direction;
+
+        if ($newIndex >= 0 && $newIndex < count($todos)) {
+            $temp = $todos[$todoSelect];
+            $todos[$todoSelect] = $todos[$newIndex];
+            $todos[$newIndex] = $temp;
+
+            file_put_contents('todos.json', json_encode($todos));
+        }
+    }
+
+    header("location:index.php");
+    exit;
 }
 
-if (isset($_POST["downBtn"])) {
-    $indexActuel = $_POST["downBtn"];
-    if ($indexActuel < count($todos) - 1) {
-        $temp = $todos[$indexActuel];
-        $todos[$indexActuel] = $todos[$indexActuel + 1];
-        $todos[$indexActuel + 1] = $temp;
-        file_put_contents('todos.json', json_encode($todos));
-        header("location:index.php");
-        exit;
-    }
-}
 ?>
 
 <!DOCTYPE html>
