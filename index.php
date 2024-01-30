@@ -21,7 +21,7 @@ $row = $query->fetchAll(PDO::FETCH_ASSOC);
 
 
 if (isset($_POST["submitBtn"])) {
-    if (strlen($_POST["todoName"]) > 2) {
+    if (mb_strlen($_POST["todoName"]) > 2) {
         $insertData = $pdo->prepare('INSERT INTO todo(name, expiration) VALUES (:nom, :date)');
         $insertData->execute(['nom' => $_POST["todoName"], 'date' => $_POST["todoDate"]]);
 
@@ -35,6 +35,15 @@ if (isset($_POST["submitBtn"])) {
 if (isset($_POST['delete'])) {
     $deleteData = $pdo->prepare('DELETE FROM todo WHERE id = :id ');
     $deleteData->execute(['id' => $_POST['delete']]);
+
+    header('Location: index.php');
+    exit;
+}
+
+if (isset($_POST['edit'])) {
+
+    $updateData = $pdo->prepare('UPDATE todo SET name = :newName WHERE id = :id ');
+    $updateData->execute(['id' => $_POST['edit'], 'newName' => $_POST['inputChange']]);
 
     header('Location: index.php');
     exit;
