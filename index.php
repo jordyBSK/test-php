@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+
+ $_SESSION['userName'] = "dylan";
+
+$errorMessage1 = '';
+
 $todos = [];
 
 if (file_exists('todos.json')) {
@@ -7,10 +14,15 @@ if (file_exists('todos.json')) {
 
 if (isset($_POST["submitBtn"])) {
     $newTodo = [$_POST["todoName"], $_POST["todoDate"]];
-    $todos[] = $newTodo;
-    file_put_contents('todos.json', json_encode($todos));
-    header("location:index.php");
-    exit;
+    if (strlen($_POST["todoName"]) > 10){
+        $todos[] = $newTodo;
+        file_put_contents('todos.json', json_encode($todos));
+        header("location:index.php");
+        exit;
+    }else{
+        $errorMessage2 = 'minimum 10 lettre dans la todo';
+    }
+
 }
 
 if (isset($_POST["delete"])) {
@@ -32,14 +44,17 @@ if (isset($_POST["edit"]) && isset($_POST["inputChange"])) {
     }
 }
 
-function sortName($a, $b) {
+function sortName($a, $b): int
+{
     return strcmp($a[0], $b[0]);
 }
 
 
-function sortDate($a, $b) {
+function sortDate($a, $b): int
+{
     return strtotime($a[1]) - strtotime($b[1]);
 }
+
 if (isset($_GET['sortBtn'])) {
     if (isset($_GET['sort'])) {
         $sortType = $_GET['sort'];
@@ -93,6 +108,7 @@ if (isset($_GET['sortBtn'])) {
     </button>
 </form>
 
+
 <form method="get" class="flex">
     <select name="sort" id="sort"
             class="max-w-md mx-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -106,6 +122,13 @@ if (isset($_GET['sortBtn'])) {
         Submit
     </button>
 </form>
+<?php if (!empty($errorMessage2)) : ?>
+    <div class="bg-red-300 justify-center items-center flex border-red-600 border-2 rounded-lg max-w-md mx-auto mt-12">
+        <h1 class="p-3 px-12">
+            <?php echo $errorMessage2; ?>
+        </h1>
+    </div>
+<?php endif; ?>
 
 
 <div class="max-w-lg mx-auto mt-12">
