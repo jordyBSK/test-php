@@ -1,0 +1,18 @@
+{
+    "name": "dylanbossoku/test-php",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Dylanbossoku\\TestPhp\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "jordybsk",
+            "email": "dylan.bossoku@jobtrek.ch"
+        }
+    ],
+    "require": {
+        "nesbot/carbon": "^2.72"
+    }
+}
